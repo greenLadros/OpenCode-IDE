@@ -6,8 +6,9 @@ description
 #init
 #import
 from tkinter import *
-from tkinter import ttk
-import os
+from tkinter import ttk, filedialog
+from os import mkdir, path
+from assets.themes import themes 
 
 #creating the gui
 #creating the window seetings
@@ -15,29 +16,30 @@ root = Tk()
 root.title("OpenCode - IDE")
 #root.iconbitmap(" ")
 root.geometry("1800x3500")
+root.minsize(240, 200)
 #root.attributes("-fullscreen", True)
 
-
+# NOTE suggestions
+# split things up into different files, makes code more managable
+# be super careful with memory usage, python is not great at doing big projects and uses alot of memory (shrink things down)
+# tkinter is somewhat limiting, might be a issue for some features
+# terminal is in every modern IDE, i already dont like how stressful that sounds to implement
 
 #########################creating toolbar########################
 toolBar = Menu(root)
 
 #creating menus
 #creating commands for file menu
+
+
+#TODO: use tk.filedialog, doing any with files creates them inside the repo, not ideal
 class FileMenu():
     def CreateNewFile(self):
-        popup = Tk()
-        Label(popup).pack() #for space
-        popup.geometry("200x120")
-        entry = Entry(popup, width=25)
-        entry.pack()
-        Label(popup).pack() #for space
-        def command():
-            open(f"{entry.get()}","w+")
-            createNewTab(entry.get())
-            popup.destroy()
-        Button(popup, text="Save", padx=25, pady=10, command=command).pack()
+        fileLocation = filedialog.asksaveasfilename() # it probably doesnt even need to save, just create the new tab
+        open(f"{fileLocation}","w+")
+        createNewTab(fileLocation)
 
+    # I really dont think you need to create new folders + no support for this in tkinter.filedialog
     def CreateNewFolder(self):
         popup = Tk()
         Label(popup).pack() #for space
@@ -46,29 +48,21 @@ class FileMenu():
         entry.pack()
         Label(popup).pack() #for space
         def command():
-            os.mkdir(f"{entry.get()}")
+            mkdir(f"{entry.get()}")
             popup.destroy()
         Button(popup, text="Save", padx=25, pady=10, command=command).pack()
 
     def OpenFile(self):
-        popup = Tk()
-        Label(popup).pack() #for space
-        popup.geometry("200x120")
-        entry = Entry(popup, width=25)
-        entry.pack()
-        Label(popup).pack() #for space
-        def command():
-            f = open(f'{entry.get()}', 'r')
-            createNewTab(entry.get())
-            popup.destroy()
-        Button(popup, text="Open", padx=25, pady=10, command=command).pack()
+        fileLocation = filedialog.askopenfile()
+        f = open(f'{fileLocation}', 'r')
+        createNewTab(fileLocation)
 
     def OpenFolder(self):
-        pass
+        filedialog.askdirectory()
 
     def SaveFile(self):
         filename = Notepads[0] # not the best solution
-        if os.path.exists(filename):
+        if path.exists(filename):
             content = Notepads[0] # not the best solution
             open(filename, "w").write(content)
         else:
@@ -76,16 +70,8 @@ class FileMenu():
 
     def SaveFileAs(self):
         content = Notepads[0].get(1.0, END)
-        popup = Tk()
-        Label(popup).pack() #for space
-        popup.geometry("200x120")
-        entry = Entry(popup, width=25)
-        entry.pack()
-        Label(popup).pack() #for space
-        def command():
-            open(f"{entry.get()}","w+").write(content)
-            popup.destroy()
-        Button(popup, text="Save", padx=25, pady=10, command=command).pack()
+        fileLocation = filedialog.asksaveasfile()
+        open(f"{fileLocation}","w+").write(content)
 
 
 fm = FileMenu()
@@ -115,6 +101,7 @@ class EditMenu():
     def Paste(self):
         pass
     def Find(self):
+        #TODO: use Regex, pop up window maybe, seems like a hassle
         pass
 
 em = EditMenu()
@@ -155,12 +142,7 @@ viewMenu.add_command(label="Import Editor Theme", command=vm.importEditorTheme)
 ## not sure
 themeChoice = StringVar(root)
 
-colorThemes = {
-    "Light": ("#000000", "#ffffff"),
-    "Dark": ("#c4c4c4", "#2d2d2d"),
-    "Red Forest": ("#2d2d2d", "#ffe8e8"),
-    "Night Blue": ("#ededed", "#6b9dc2")
-}
+colorThemes = themes.colorThemes
 
 for theme in colorThemes:
     editorTheme.add_radiobutton(label=theme, variable=themeChoice)
@@ -217,7 +199,7 @@ class HelpMenu():
         comp += 1
 
     
-    def openExplenationFile(self):
+    def openExplanationFile(self):
         pass
     
     def openContributeFile(self):
@@ -230,7 +212,7 @@ helpMenu = Menu(toolBar, tearoff=False)
 
 helpMenu.add_command(label="Help", accelerator="Ctrl+Shift+H", command=hm.popupHelp)
 helpMenu.add_command(label="How to get started?", accelerator="Ctrl+Shift+W", command=hm.openWelcomeFile)
-helpMenu.add_command(label="What is OpenCode ?", command=hm.openExplenationFile)
+helpMenu.add_command(label="What is OpenCode ?", command=hm.openExplanationFile)
 helpMenu.add_command(label="How can i contribute?", command=hm.openContributeFile)
 helpMenu.add_command(label="How to create editor themes?", command=hm.openContributeFile)
 helpMenu.add_command(label="How to create extension?", command=hm.openContributeFile)
